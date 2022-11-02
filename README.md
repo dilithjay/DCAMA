@@ -87,3 +87,13 @@ For testing, you have to prepare a pretrained model. You can train one by yourse
 
 ## BibTeX
 If you are interested in our paper, please cite:
+```
+@inproceedings{shi2022dense,
+  title={Dense Cross-Query-and-Support Attention Weighted Mask Aggregation for Few-Shot Segmentation},
+  author={Shi, Xinyu and Wei, Dong and Zhang, Yu and Lu, Donghuan and Ning, Munan and Chen, Jiashun and Ma, Kai and Zheng, Yefeng},
+  booktitle={European Conference on Computer Vision},
+  pages={151--168},
+  year={2022},
+  organization={Springer}
+}
+```
