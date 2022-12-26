@@ -1,4 +1,4 @@
-python ./train.py --datapath "../datasets" \
+python ./train.py --datapath "/content/DCAMA/datasets" \
            --benchmark serp \
            --fold 0 \
            --bsz 4 \

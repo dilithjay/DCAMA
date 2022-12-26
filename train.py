@@ -72,7 +72,7 @@ if __name__ == '__main__':
     Logger.info('# available GPUs: %d' % torch.cuda.device_count())
 
     # Dataset initialization
-    FSSDataset.initialize(img_size=256, datapath=r'D:\FYP\Code\DCAMA\datasets', use_original_imgsize=False)
+    FSSDataset.initialize(img_size=256, datapath=args.datapath, use_original_imgsize=False)
     dataloader_trn = FSSDataset.build_dataloader(args.benchmark, args.bsz, args.nworker, args.fold, 'trn')
     dataloader_val = FSSDataset.build_dataloader(args.benchmark, args.bsz, args.nworker, args.fold, 'val')
 
