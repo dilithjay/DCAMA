@@ -12,7 +12,7 @@ class AverageMeter:
     def __init__(self, dataset):
         self.benchmark = dataset.benchmark
         self.class_ids_interest = dataset.class_ids
-        self.class_ids_interest = torch.tensor(self.class_ids_interest).cuda()
+        self.class_ids_interest = torch.tensor(self.class_ids_interest)
 
         if self.benchmark == 'pascal':
             self.nclass = 20
@@ -20,9 +20,11 @@ class AverageMeter:
             self.nclass = 80
         elif self.benchmark == 'fss':
             self.nclass = 1000
+        else:
+            self.nclass = 1
 
-        self.intersection_buf = torch.zeros([2, self.nclass]).float().cuda()
-        self.union_buf = torch.zeros([2, self.nclass]).float().cuda()
+        self.intersection_buf = torch.zeros([2, self.nclass]).float()
+        self.union_buf = torch.zeros([2, self.nclass]).float()
         self.ones = torch.ones_like(self.union_buf)
         self.loss_buf = []
 

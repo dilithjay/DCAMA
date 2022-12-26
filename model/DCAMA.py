@@ -5,54 +5,38 @@ from operator import add
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models import resnet
+# from torchvision.models import resnet
+from torchgeo.models import resnet50
 
-from .base.swin_transformer import SwinTransformer
 from model.base.transformer import MultiHeadedAttention, PositionalEncoding
 
 
 class DCAMA(nn.Module):
 
-    def __init__(self, backbone, pretrained_path, use_original_imgsize):
+    def __init__(self, backbone='resnet50', use_original_imgsize=False):
         super(DCAMA, self).__init__()
 
         self.backbone = backbone
         self.use_original_imgsize = use_original_imgsize
 
         # feature extractor initialization
-        if backbone == 'resnet50':
-            self.feature_extractor = resnet.resnet50()
-            self.feature_extractor.load_state_dict(torch.load(pretrained_path))
-            self.feat_channels = [256, 512, 1024, 2048]
-            self.nlayers = [3, 4, 6, 3]
-            self.feat_ids = list(range(0, 17))
-        elif backbone == 'resnet101':
-            self.feature_extractor = resnet.resnet101()
-            self.feature_extractor.load_state_dict(torch.load(pretrained_path))
-            self.feat_channels = [256, 512, 1024, 2048]
-            self.nlayers = [3, 4, 23, 3]
-            self.feat_ids = list(range(0, 34))
-        elif backbone == 'swin':
-            self.feature_extractor = SwinTransformer(img_size=384, patch_size=4, window_size=12, embed_dim=128,
-                                            depths=[2, 2, 18, 2], num_heads=[4, 8, 16, 32])
-            self.feature_extractor.load_state_dict(torch.load(pretrained_path)['model'])
-            self.feat_channels = [128, 256, 512, 1024]
-            self.nlayers = [2, 2, 18, 2]
-        else:
-            raise Exception('Unavailable backbone: %s' % backbone)
+        self.feature_extractor = resnet50('sentinel2', 'all', pretrained=True).float()
+        self.feat_channels = [256, 512, 1024, 2048]
+        self.nlayers = [3, 4, 6, 3]
+        self.feat_ids = list(range(0, 17))
         self.feature_extractor.eval()
 
         # define model
         self.lids = reduce(add, [[i + 1] * x for i, x in enumerate(self.nlayers)])
         self.stack_ids = torch.tensor(self.lids).bincount()[-4:].cumsum(dim=0)
-        self.model = DCAMA_model(in_channels=self.feat_channels, stack_ids=self.stack_ids)
+        self.model = DCAMA_model(in_channels=self.feat_channels, stack_ids=self.stack_ids).float()
 
         self.cross_entropy_loss = nn.CrossEntropyLoss()
 
     def forward(self, query_img, support_img, support_mask):
         with torch.no_grad():
-            query_feats = self.extract_feats(query_img)
-            support_feats = self.extract_feats(support_img)
+            query_feats = self.extract_feats(query_img.float())
+            support_feats = self.extract_feats(support_img.float())
 
         logit_mask = self.model(query_feats, support_feats, support_mask.clone())
 
@@ -72,7 +56,7 @@ class DCAMA(nn.Module):
         elif self.backbone == 'resnet50' or self.backbone == 'resnet101':
             bottleneck_ids = reduce(add, list(map(lambda x: list(range(x)), self.nlayers)))
             # Layer 0
-            feat = self.feature_extractor.conv1.forward(img)
+            feat = self.feature_extractor.conv1.float().forward(img)
             feat = self.feature_extractor.bn1.forward(feat)
             feat = self.feature_extractor.relu.forward(feat)
             feat = self.feature_extractor.maxpool.forward(feat)
