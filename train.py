@@ -23,7 +23,8 @@ def train(epoch, model, dataloader, optimizer, training):
     for idx, batch in enumerate(dataloader):
 
         # 1. forward pass
-        batch = utils.to_cuda(batch) if device == 'cuda' else utils.to_cpu(batch)
+        if device == 'cuda':
+            batch = utils.to_cuda(batch)
         logit_mask = model(batch['query_img'], batch['support_imgs'].squeeze(1), batch['support_masks'].squeeze(1))
         pred_mask = logit_mask.argmax(dim=1)
 
