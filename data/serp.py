@@ -22,12 +22,12 @@ class DatasetSerp(Dataset):
         self.transform = transform
         self.use_original_imgsize = use_original_imgsize
 
-        self.class_ids = self.build_class_ids()
+        self.class_ids = [0]   # self.build_class_ids()
         self.img_metadata_classwise = self.build_img_metadata_classwise()
         self.img_metadata = self.build_img_metadata()
 
     def __len__(self):
-        return len(self.img_metadata) if self.split == 'trn' else 1000
+        return len(self.img_metadata)
 
     def __getitem__(self, idx):
         # ignores idx during training & testing and perform uniform sampling over object classes to form an episode
