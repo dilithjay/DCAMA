@@ -29,8 +29,8 @@ class AverageMeter:
         self.loss_buf = []
 
     def update(self, inter_b, union_b, class_id, loss):
-        self.intersection_buf.index_add_(1, class_id, inter_b.float())
-        self.union_buf.index_add_(1, class_id, union_b.float())
+        self.intersection_buf.index_add_(1, class_id.cpu(), inter_b.float().cpu())
+        self.union_buf.index_add_(1, class_id.cpu(), union_b.float().cpu())
         if loss is None:
             loss = torch.tensor(0.0)
         self.loss_buf.append(loss)
