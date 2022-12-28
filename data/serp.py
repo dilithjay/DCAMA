@@ -22,12 +22,12 @@ class DatasetSerp(Dataset):
         self.transform = transform
         self.use_original_imgsize = use_original_imgsize
 
-        self.class_ids = [0]   # self.build_class_ids()
+        self.class_ids = [0]
         self.img_metadata_classwise = self.build_img_metadata_classwise()
         self.img_metadata = self.build_img_metadata()
 
     def __len__(self):
-        return len(self.img_metadata)
+        return len(self.img_metadata) if self.split == 'trn' else 8
 
     def __getitem__(self, idx):
         # ignores idx during training & testing and perform uniform sampling over object classes to form an episode
@@ -78,17 +78,18 @@ class DatasetSerp(Dataset):
 
     def read_mask(self, name):
         mask_path = os.path.join(self.base_path, 'annotations', name)
-        mask = torch.tensor(np.array(Image.open(mask_path[:mask_path.index('.npy')] + '-mask.png')))
+        mask = torch.tensor(np.array(Image.open(mask_path[:mask_path.index('.npy')] + '-mask.png'))) / 255
         return mask
 
     def load_frame(self):
         class_sample = np.random.choice(self.class_ids, 1, replace=False)[0]
         query_name = np.random.choice(self.img_metadata_classwise[class_sample], 1, replace=False)[0]
         query_img = np.load(os.path.join(self.base_path, query_name)).astype(float)[:10, :, :].transpose(1, 2, 0)
+        query_img = (query_img - 1800) / 1300
         query_mask = self.read_mask(query_name)
 
         org_qry_imsize = query_img.size
-
+        
         query_mask[query_mask != class_sample + 1] = 0
         query_mask[query_mask == class_sample + 1] = 1
 
@@ -102,11 +103,12 @@ class DatasetSerp(Dataset):
         support_imgs = []
         support_masks = []
         for support_name in support_names:
-            support_imgs.append(np.load(os.path.join(self.base_path, support_name)).astype(float)[:10, :, :].transpose(1, 2, 0))
+            support_img = np.load(os.path.join(self.base_path, support_name)).astype(float)[:10, :, :].transpose(1, 2, 0)
+            support_imgs.append((support_img - 1800) / 1300)
             support_mask = self.read_mask(support_name)
             support_mask[support_mask != class_sample + 1] = 0
             support_mask[support_mask == class_sample + 1] = 1
             support_masks.append(support_mask)
-
+        
         return query_img, query_mask, support_imgs, support_masks, query_name, support_names, class_sample, org_qry_imsize
 
