@@ -16,7 +16,7 @@ def train(epoch, model, dataloader, optimizer, training):
 
     # Force randomness during training / freeze randomness during testing
     utils.fix_randseed(None) if training else utils.fix_randseed(0)
-    model.model.train() if training else model.model.eval()
+    model.train_mode() if training else model.eval()
     average_meter = AverageMeter(dataloader.dataset)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -29,7 +29,7 @@ def train(epoch, model, dataloader, optimizer, training):
         pred_mask = logit_mask.argmax(dim=1)
 
         # 2. Compute loss & update model parameters
-        loss = model.module.compute_objective(logit_mask, batch['query_mask'])
+        loss = model.compute_objective(logit_mask, batch['query_mask'])
         if training:
             optimizer.zero_grad()
             loss.backward()

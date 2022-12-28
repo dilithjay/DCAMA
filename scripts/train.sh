@@ -1,7 +1,7 @@
 python ./train.py --datapath "/content/DCAMA/datasets" \
            --benchmark serp \
            --fold 0 \
-           --bsz 4 \
+           --bsz 1 \
            --nworker 0 \
            --backbone resnet50 \
            --logpath "./logs" \

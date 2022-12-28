@@ -21,6 +21,7 @@ class DCAMA(nn.Module):
 
         # feature extractor initialization
         self.feature_extractor = resnet50('sentinel2', 'all', pretrained=True).float()
+        self.feature_extractor.conv1 = nn.Conv2d(10, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
         self.feat_channels = [256, 512, 1024, 2048]
         self.nlayers = [3, 4, 6, 3]
         self.feat_ids = list(range(0, 17))
@@ -45,43 +46,35 @@ class DCAMA(nn.Module):
     def extract_feats(self, img):
         r""" Extract input image features """
         feats = []
+            
+        bottleneck_ids = reduce(add, list(map(lambda x: list(range(x)), self.nlayers)))
+        # Layer 0
+        feat = self.feature_extractor.conv1.float().forward(img)
+        feat = self.feature_extractor.bn1.forward(feat)
+        feat = self.feature_extractor.relu.forward(feat)
+        feat = self.feature_extractor.maxpool.forward(feat)
 
-        if self.backbone == 'swin':
-            _ = self.feature_extractor.forward_features(img)
-            for feat in self.feature_extractor.feat_maps:
-                bsz, hw, c = feat.size()
-                h = int(hw ** 0.5)
-                feat = feat.view(bsz, h, h, c).permute(0, 3, 1, 2).contiguous()
-                feats.append(feat)
-        elif self.backbone == 'resnet50' or self.backbone == 'resnet101':
-            bottleneck_ids = reduce(add, list(map(lambda x: list(range(x)), self.nlayers)))
-            # Layer 0
-            feat = self.feature_extractor.conv1.float().forward(img)
-            feat = self.feature_extractor.bn1.forward(feat)
-            feat = self.feature_extractor.relu.forward(feat)
-            feat = self.feature_extractor.maxpool.forward(feat)
+        # Layer 1-4
+        for hid, (bid, lid) in enumerate(zip(bottleneck_ids, self.lids)):
+            res = feat
+            feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].conv1.forward(feat)
+            feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].bn1.forward(feat)
+            feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].relu.forward(feat)
+            feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].conv2.forward(feat)
+            feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].bn2.forward(feat)
+            feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].relu.forward(feat)
+            feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].conv3.forward(feat)
+            feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].bn3.forward(feat)
 
-            # Layer 1-4
-            for hid, (bid, lid) in enumerate(zip(bottleneck_ids, self.lids)):
-                res = feat
-                feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].conv1.forward(feat)
-                feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].bn1.forward(feat)
-                feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].relu.forward(feat)
-                feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].conv2.forward(feat)
-                feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].bn2.forward(feat)
-                feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].relu.forward(feat)
-                feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].conv3.forward(feat)
-                feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].bn3.forward(feat)
+            if bid == 0:
+                res = self.feature_extractor.__getattr__('layer%d' % lid)[bid].downsample.forward(res)
 
-                if bid == 0:
-                    res = self.feature_extractor.__getattr__('layer%d' % lid)[bid].downsample.forward(res)
+            feat += res
 
-                feat += res
+            if hid + 1 in self.feat_ids:
+                feats.append(feat.clone())
 
-                if hid + 1 in self.feat_ids:
-                    feats.append(feat.clone())
-
-                feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].relu.forward(feat)
+            feat = self.feature_extractor.__getattr__('layer%d' % lid)[bid].relu.forward(feat)
 
         return feats
 
