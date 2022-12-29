@@ -38,7 +38,7 @@ class Visualizer:
         for sample_idx, (spt_img, spt_mask, qry_img, qry_mask, pred_mask, cls_id) in \
                 enumerate(zip(spt_img_b, spt_mask_b, qry_img_b, qry_mask_b, pred_mask_b, cls_id_b)):
             iou = iou_b[sample_idx] if iou_b is not None else None
-            cls.visualize_prediction(spt_img, spt_mask, qry_img, qry_mask, pred_mask, cls_id, batch_idx, sample_idx, True, iou)
+            cls.visualize_prediction(spt_img[1:4], spt_mask, qry_img[1:4], qry_mask, pred_mask, cls_id, batch_idx, sample_idx, True, iou)
 
     @classmethod
     def to_numpy(cls, tensor, type):

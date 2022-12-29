@@ -21,7 +21,8 @@ def test(model, dataloader, nshot):
     for idx, batch in enumerate(dataloader):
 
         # 1. forward pass
-        batch = utils.to_cuda(batch)
+        if torch.cuda.is_available():
+            batch = utils.to_cuda(batch)
         pred_mask = model.module.predict_mask_nshot(batch, nshot=nshot)
 
         assert pred_mask.size() == batch['query_mask'].size()
@@ -53,19 +54,19 @@ if __name__ == '__main__':
     Logger.initialize(args, training=False)
 
     # Model initialization
-    model = DCAMA(args.backbone, args.feature_extractor_path, args.use_original_imgsize)
+    model = DCAMA(args.backbone, args.use_original_imgsize)
     model.eval()
 
     # Device setup
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     Logger.info('# available GPUs: %d' % torch.cuda.device_count())
-    model = nn.DataParallel(model)
+    # model = nn.DataParallel(model)
     model.to(device)
 
     # Load trained model
     if args.load == '': raise Exception('Pretrained model not specified.')
     params = model.state_dict()
-    state_dict = torch.load(args.load)
+    state_dict = torch.load(args.load, map_location=device)
 
     for k1, k2 in zip(list(state_dict.keys()), params.keys()):
         state_dict[k2] = state_dict.pop(k1)
@@ -77,7 +78,7 @@ if __name__ == '__main__':
     Visualizer.initialize(args.visualize, args.vispath)
 
     # Dataset initialization
-    FSSDataset.initialize(img_size=384, datapath=args.datapath, use_original_imgsize=args.use_original_imgsize)
+    FSSDataset.initialize(img_size=256, datapath=args.datapath, use_original_imgsize=args.use_original_imgsize)
     dataloader_test = FSSDataset.build_dataloader(args.benchmark, args.bsz, args.nworker, args.fold, 'test', args.nshot)
 
     # Test

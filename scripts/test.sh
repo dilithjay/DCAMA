@@ -1,12 +1,11 @@
-python ./test.py --datapath "../datasets" \
-                 --benchmark coco \
+python ./test.py --datapath "D:/FYP/Code/DCAMA/datasets" \
+                 --benchmark serp \
                  --fold 0 \
                  --bsz 1 \
-                 --nworker 8 \
-                 --backbone swin \
-                 --feature_extractor_path "../backbones/swin_base_patch4_window12_384.pth" \
+                 --nworker 0 \
+                 --backbone resnet50 \
                  --logpath "./logs" \
-                 --load "./best_model.pt" \
-                 --nshot 5 \
+                 --load "D:/FYP/Code/DCAMA/logs/best_model.pt" \
+                 --nshot 1 \
                  --vispath "./vis_5" \
                  --visualize
