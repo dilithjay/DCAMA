@@ -18,7 +18,7 @@ class DatasetSerp(Dataset):
         self.benchmark = 'serp'
         self.shot = shot
         self.split_coco = split if split == 'val' else 'train'
-        self.base_path = os.path.join(datapath, 'Serp')
+        self.base_path = os.path.join(datapath, 'Serp', str(fold))
         self.transform = transform
         self.use_original_imgsize = use_original_imgsize
 
