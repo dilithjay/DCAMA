@@ -49,7 +49,7 @@ class DCAMA(nn.Module):
             
         bottleneck_ids = reduce(add, list(map(lambda x: list(range(x)), self.nlayers)))
         # Layer 0
-        feat = self.feature_extractor.conv1.float().forward(img)
+        feat = self.feature_extractor.conv1.forward(img)
         feat = self.feature_extractor.bn1.forward(feat)
         feat = self.feature_extractor.relu.forward(feat)
         feat = self.feature_extractor.maxpool.forward(feat)

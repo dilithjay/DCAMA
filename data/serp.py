@@ -44,14 +44,14 @@ class DatasetSerp(Dataset):
             support_masks[midx] = F.interpolate(smask.unsqueeze(0).unsqueeze(0).float(), support_imgs.size()[-2:], mode='nearest').squeeze()
         support_masks = torch.stack(support_masks)
 
-        batch = {'query_img': query_img,
-                 'query_mask': query_mask,
+        batch = {'query_img': query_img.float(),
+                 'query_mask': query_mask.float(),
                  'query_name': query_name,
 
                  'org_query_imsize': org_qry_imsize,
 
-                 'support_imgs': support_imgs,
-                 'support_masks': support_masks,
+                 'support_imgs': support_imgs.float(),
+                 'support_masks': support_masks.float(),
                  'support_names': support_names,
                  'class_id': torch.tensor(class_sample)}
 
@@ -84,11 +84,11 @@ class DatasetSerp(Dataset):
     def load_frame(self):
         class_sample = np.random.choice(self.class_ids, 1, replace=False)[0]
         query_name = np.random.choice(self.img_metadata_classwise[class_sample], 1, replace=False)[0]
-        query_img = np.load(os.path.join(self.base_path, query_name)).astype(float)[:10, :, :].transpose(1, 2, 0)
+        query_img = np.load(os.path.join(self.base_path, query_name)).astype(float).transpose(1, 2, 0)
         query_img /= 2000  # = (query_img - 1800) / 1300
         query_mask = self.read_mask(query_name)
 
-        org_qry_imsize = query_img.size
+        org_qry_imsize = query_img.shape
         
         query_mask[query_mask != class_sample + 1] = 0
         query_mask[query_mask == class_sample + 1] = 1
