@@ -66,7 +66,7 @@ class DatasetSerp(Dataset):
         return class_ids
 
     def build_img_metadata_classwise(self):
-        train_imgs = glob(os.path.join(self.base_path, 'train', '*.npy'))
+        train_imgs = glob(os.path.join(self.base_path, self.split_coco, '*.npy'))
         img_metadata_classwise = {0: list(map(lambda x: os.path.relpath(x, os.path.dirname(os.path.dirname(x))), train_imgs))}
         return img_metadata_classwise
 
@@ -85,7 +85,7 @@ class DatasetSerp(Dataset):
         class_sample = np.random.choice(self.class_ids, 1, replace=False)[0]
         query_name = np.random.choice(self.img_metadata_classwise[class_sample], 1, replace=False)[0]
         query_img = np.load(os.path.join(self.base_path, query_name)).astype(float)[:10, :, :].transpose(1, 2, 0)
-        query_img = (query_img - 1800) / 1300
+        query_img /= 2000  # = (query_img - 1800) / 1300
         query_mask = self.read_mask(query_name)
 
         org_qry_imsize = query_img.size
@@ -104,7 +104,7 @@ class DatasetSerp(Dataset):
         support_masks = []
         for support_name in support_names:
             support_img = np.load(os.path.join(self.base_path, support_name)).astype(float)[:10, :, :].transpose(1, 2, 0)
-            support_imgs.append((support_img - 1800) / 1300)
+            support_imgs.append(support_img / 2000)
             support_mask = self.read_mask(support_name)
             support_mask[support_mask != class_sample + 1] = 0
             support_mask[support_mask == class_sample + 1] = 1
