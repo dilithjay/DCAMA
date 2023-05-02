@@ -26,7 +26,7 @@ def eval_expression(exp: list, image: np.ndarray = None):
     return eval(expression)
 
 
-paths = glob("/home/dilith/Projects/DCAMA/datasets/Serp/*/*/*.npy")
+paths = glob("datasets/Serp/*/*/*.npy")
 for path in tqdm(paths):
     img = np.load(path)
     idx = eval_expression(expression_, img)
