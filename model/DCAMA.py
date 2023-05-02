@@ -21,7 +21,7 @@ class DCAMA(nn.Module):
 
         # feature extractor initialization
         self.feature_extractor = resnet50(ResNet50_Weights.SENTINEL2_ALL_MOCO).float()
-        self.feature_extractor.conv1 = nn.Conv2d(10, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+        self.feature_extractor.conv1 = nn.Conv2d(11, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
         self.feat_channels = [256, 512, 1024, 2048]
         self.nlayers = [3, 4, 6, 3]
         self.feat_ids = list(range(0, 17))

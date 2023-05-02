@@ -32,6 +32,7 @@ class FSSDataset:
             3097.38396507,
             1786.85631331,
             929.30668321,
+            0
         ]
 
         cls.img_std = [
@@ -45,6 +46,7 @@ class FSSDataset:
             622.79759571,
             419.01506965,
             298.34517013,
+            1
         ]
         cls.datapath = datapath
         cls.use_original_imgsize = use_original_imgsize
