@@ -3,3 +3,8 @@ start.sh
 config.json
 __pycache__
 logs
+outputs/
+**/*.zip
+**/inference
+**/Serp-1/
+**/Serp/

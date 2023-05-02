@@ -95,7 +95,7 @@ class DatasetSerp(Dataset):
 
     def read_mask(self, name):
         mask_path = os.path.join(self.base_path, "annotations", name)
-        mask = torch.tensor(np.array(Image.open(mask_path[: mask_path.index(".npy")] + "-mask.png"))) / 255
+        mask = torch.tensor(np.load(mask_path))
         return mask
 
     def load_frame(self):
