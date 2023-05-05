@@ -8,7 +8,7 @@ from torchvision import transforms
 from data.pascal import DatasetPASCAL
 from data.coco import DatasetCOCO
 from data.fss import DatasetFSS
-from data.serp import DatasetSerp
+from data.serp import DatasetSerpMini
 
 
 class FSSDataset:
@@ -18,7 +18,7 @@ class FSSDataset:
             "pascal": DatasetPASCAL,
             "coco": DatasetCOCO,
             "fss": DatasetFSS,
-            "serp": DatasetSerp,
+            "serp": DatasetSerpMini,
         }
 
         cls.img_mean = [
