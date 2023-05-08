@@ -101,6 +101,7 @@ class DatasetSerp(Dataset):
     def load_frame(self):
         class_sample = np.random.choice(self.class_ids, 1, replace=False)[0]
         query_name = np.random.choice(self.img_metadata_classwise[class_sample], 1, replace=False)[0]
+        query_region = os.path.basename(query_name).split("_")[0]
         query_img = np.load(os.path.join(self.base_path, query_name)).astype(float).transpose(1, 2, 0)
         query_mask = self.read_mask(query_name)
 
@@ -112,7 +113,7 @@ class DatasetSerp(Dataset):
         support_names = set()
         while True:  # keep sampling support set if query == support
             support_name = np.random.choice(self.img_metadata_classwise[class_sample], 1, replace=False)[0]
-            if query_name != support_name:
+            if os.path.basename(support_name).startswith(query_region) and query_name != support_name:
                 support_names.add(support_name)
             if len(support_names) == self.shot:
                 break
